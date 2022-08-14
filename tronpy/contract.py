@@ -331,6 +331,8 @@ class ContractMethod(object):
         self.call_token_value = 0
         self.call_token_id = 0
 
+        self.force_constant = False
+
     def __str__(self):
         return self.function_type
 
@@ -353,13 +355,25 @@ class ContractMethod(object):
         self.call_token_id = token_id
         return self
 
+    def with_constant(self) -> "ContractMethod":
+        self.force_constant = True
+        return self
+
+    def get_data(self, *args, **kwargs) -> bytearray:
+        parameter = self._prepare_parameter(*args, **kwargs)
+        return bytearray.fromhex(self.function_signature_hash + str(parameter))
+
     def call(self, *args, **kwargs) -> "tronpy.tron.TransactionBuilder":
         """Call the contract method."""
         return self.__call__(*args, **kwargs)
 
-    def parse_output(self, raw: str) -> Any:
+    def parse_output(self, raw: Union[str, bytearray]) -> Any:
         """Parse contract result as result."""
-        parsed_result = trx_abi.decode_single(self.output_type, bytes.fromhex(raw))
+        if isinstance(raw, str):
+            data = bytes.fromhex(raw)
+        else:
+            data = raw
+        parsed_result = trx_abi.decode_single(self.output_type, data)
         if len(self.outputs) == 1:
             return parsed_result[0]
         if len(self.outputs) == 0:
@@ -400,7 +414,8 @@ class ContractMethod(object):
         return parameter
 
     def _trigger_contract(self, parameter):
-        if self._abi.get("stateMutability", None).lower() in ["view", "pure"]:
+        if self._abi.get("stateMutability", None).lower() in ["view", "pure"] \
+                or self.force_constant:
             # const call, contract ret
             ret = self._client.trigger_const_smart_contract_function(
                 self._owner_address, self._contract.contract_address, self.function_signature, parameter,
