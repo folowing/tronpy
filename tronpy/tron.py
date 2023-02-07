@@ -875,5 +875,12 @@ class Tron(object):
             payload['txid'] = txn.txid
         return payload
 
+    def broadcast_ex(self, txn: Transaction) -> dict:
+        payload = self.provider.make_request("wallet/broadcasttransactionex", txn.to_json())
+        self._handle_api_error(payload)
+        if payload.get('txid') is None:
+            payload['txid'] = txn.txid
+        return payload
+
     def get_sign_weight(self, txn: Transaction) -> dict:
         return self.provider.make_request("wallet/getsignweight", txn.to_json())
