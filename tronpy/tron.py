@@ -182,6 +182,10 @@ class Transaction:
         """Broadcast the transaction to TRON network."""
         return TransactionRet(self._client.broadcast(self), client=self._client, method=self._method)
 
+    def broadcast_ex(self) -> TransactionRet:
+        """Broadcast the transaction to TRON network."""
+        return TransactionRet(self._client.broadcast_ex(self), client=self._client, method=self._method)
+
     def set_signature(self, signature: list) -> "Transaction":
         """set transaction signature"""
         self._signature = signature
