@@ -1,14 +1,13 @@
-from eth_abi import encode_single, decode_single
+import eth_abi
+from eth_abi.base import parse_type_str
+from eth_abi.codec import ABICodec as ETHABICodec
 from eth_abi.decoding import Fixed32ByteSizeDecoder
 from eth_abi.encoding import Fixed32ByteSizeEncoder
+from eth_abi.exceptions import NonEmptyPaddingBytes
 from eth_abi.registry import BaseEquals
-from eth_abi.base import parse_type_str
-from eth_abi.codec import ABICodec
-import eth_abi
 from eth_abi.registry import registry as default_registry
 
-
-from tronpy.keys import to_base58check_address, is_address, to_tvm_address
+from tronpy.keys import is_address, to_base58check_address, to_tvm_address
 
 
 class TronAddressDecoder(Fixed32ByteSizeDecoder):
@@ -19,6 +18,13 @@ class TronAddressDecoder(Fixed32ByteSizeDecoder):
     @parse_type_str("address")
     def from_type_str(cls, abi_type, registry):
         return cls()
+
+    def validate_padding_bytes(self, value, padding_bytes):
+        value_byte_size = self._get_value_byte_size()
+        padding_size = self.data_byte_size - value_byte_size
+
+        if padding_bytes != b"\x00" * padding_size and padding_bytes != b"\x00" * (padding_size - 2) + b"\x00A":
+            raise NonEmptyPaddingBytes(f"Padding bytes were not empty: {repr(padding_bytes)}")
 
 
 class TronAddressEncoder(Fixed32ByteSizeEncoder):
@@ -46,15 +52,35 @@ def do_patching(registry):
     registry.unregister("address")
 
     registry.register(
-        BaseEquals("address"), TronAddressEncoder, TronAddressDecoder, label="address",
+        BaseEquals("address"),
+        TronAddressEncoder,
+        TronAddressDecoder,
+        label="address",
     )
 
     registry.register(
-        BaseEquals('trcToken'),
+        BaseEquals("trcToken"),
         eth_abi.encoding.UnsignedIntegerEncoder,
         eth_abi.decoding.UnsignedIntegerDecoder,
-        label='trcToken',
+        label="trcToken",
     )
+
+
+class ABICodec(ETHABICodec):
+    def encode_single(self, typ, arg):
+        encoder = self._registry.get_encoder(typ)
+        return encoder(arg)
+
+    def decode_single(self, typ, data):
+        decoder = self._registry.get_decoder(typ)
+        stream = self.stream_class(data)
+        return decoder(stream)
+
+    def encode_abi(self, types, args):
+        return super().encode(types, args)
+
+    def decode_abi(self, types, data):
+        return super().decode(types, data)
 
 
 registry = default_registry.copy()
