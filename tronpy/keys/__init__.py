@@ -252,8 +252,8 @@ class PrivateKey(BaseKey):
 
         self._raw_key = private_key_bytes
 
-        priv_key = CoincurvePrivateKey(self._raw_key)
-        self.public_key = PublicKey(priv_key.public_key.format(compressed=False)[1:])
+        self.priv_key = CoincurvePrivateKey(self._raw_key)
+        self.public_key = PublicKey(self.priv_key.public_key.format(compressed=False)[1:])
 
         super().__init__()
 
@@ -264,8 +264,7 @@ class PrivateKey(BaseKey):
 
     def sign_msg_hash(self, message_hash: bytes) -> "Signature":
         """Sign a message hash(sha256)."""
-        private_key_bytes = self.to_bytes()
-        signature_bytes = CoincurvePrivateKey(private_key_bytes).sign_recoverable(
+        signature_bytes = self.priv_key.sign_recoverable(
             message_hash,
             hasher=None,
         )

@@ -1,6 +1,7 @@
 import json
 import time
 from decimal import Decimal
+from functools import lru_cache
 from pprint import pprint
 from typing import Optional, Tuple, Union
 
@@ -271,7 +272,7 @@ class TransactionBuilder:
 
     def build(self, options=None, **kwargs) -> Transaction:
         """Build the transaction."""
-        ref_block_id = self._client.get_latest_solid_block_id()
+        ref_block_id = self._client.get_latest_solid_block_id_cached(ttl_hash=get_ttl_hash())
         # last 2 byte of block number part
         self._raw_data["ref_block_bytes"] = ref_block_id[12:16]
         # last half part of block hash
@@ -473,6 +474,10 @@ class Trx:
 
         return contract.deploy()
 
+
+def get_ttl_hash(seconds=3600):
+    """Return the same value withing `seconds` time period"""
+    return round(time.time() / seconds)
 
 class Tron:
     """The TRON API Client.
@@ -705,6 +710,13 @@ class Tron:
 
     def get_latest_solid_block_id(self) -> str:
         """Get latest solid block id in hex."""
+
+        info = self.provider.make_request("wallet/getnodeinfo")
+        return info["solidityBlock"].split(",ID:", 1)[-1]
+
+    @lru_cache()
+    def get_latest_solid_block_id_cached(self, ttl_hash=None) -> str:
+        """Get latest solid block id in hex in cache."""
 
         info = self.provider.make_request("wallet/getnodeinfo")
         return info["solidityBlock"].split(",ID:", 1)[-1]
