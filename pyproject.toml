@@ -24,6 +24,7 @@ eth_abi = ">=4.0.0a,<5.0.0"
 httpx = "*"
 pycryptodome = "<4"
 requests = "*"
+async_lru = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
