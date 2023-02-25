@@ -81,6 +81,18 @@ class HTTPProvider:
         resp.raise_for_status()
         return resp.json()
 
+    def make_request2(self, method: str, params: Any = None) -> list:
+        if self.use_api_key:
+            self.sess.headers["Tron-Pro-Api-Key"] = self.random_api_key
+
+        if params is None:
+            params = {}
+        url = urljoin(self.endpoint_uri, method)
+        resp = self.sess.post(url, json=params, timeout=self.timeout)
+
+        resp.raise_for_status()
+        return resp.json()
+
     @property
     def random_api_key(self):
         return random.choice(self._api_keys)

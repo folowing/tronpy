@@ -3,7 +3,7 @@ import time
 from decimal import Decimal
 from functools import lru_cache
 from pprint import pprint
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Any
 
 from tronpy import keys
 from tronpy.abi import tron_abi
@@ -952,3 +952,6 @@ class Tron:
 
     def get_sign_weight(self, txn: Transaction) -> dict:
         return self.provider.make_request("wallet/getsignweight", txn.to_json())
+
+    def get_storage_value(self, param: Any) -> list:
+        return self.provider.make_request2("wallet/getstoragevalue", param)
