@@ -27,6 +27,7 @@ from tronpy.exceptions import (
 )
 from tronpy.keys import PrivateKey
 from tronpy.providers import HTTPProvider
+from tronpy.util import get_ttl_hash
 
 TAddress = str
 
@@ -474,10 +475,6 @@ class Trx:
 
         return contract.deploy()
 
-
-def get_ttl_hash(seconds=3600):
-    """Return the same value withing `seconds` time period"""
-    return round(time.time() / seconds)
 
 class Tron:
     """The TRON API Client.

@@ -50,3 +50,12 @@ class AsyncHTTPProvider:
         resp = await self.client.post(url, json=params)
         resp.raise_for_status()
         return resp.json()
+
+    async def make_request2(self, method: str, params: Any = None) -> list:
+        if params is None:
+            params = {}
+        url = urljoin(self.endpoint_uri, method)
+        resp = await self.client.post(url, json=params)
+        resp.raise_for_status()
+        return resp.json()
+

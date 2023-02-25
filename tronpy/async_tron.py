@@ -3,7 +3,8 @@ import json
 import time
 from decimal import Decimal
 from pprint import pprint
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Any
+from async_lru import alru_cache
 
 from tronpy import keys
 from tronpy.abi import tron_abi
@@ -27,6 +28,7 @@ from tronpy.exceptions import (
 )
 from tronpy.keys import PrivateKey
 from tronpy.providers.async_http import AsyncHTTPProvider
+from tronpy.util import get_ttl_hash
 
 TAddress = str
 
@@ -279,7 +281,7 @@ class AsyncTransactionBuilder:
 
     async def build(self, options=None, **kwargs) -> AsyncTransaction:
         """Build the transaction."""
-        ref_block_id = await self._client.get_latest_solid_block_id()
+        ref_block_id = await self._client.get_latest_solid_block_id_cached(ttl_hash=get_ttl_hash())
         # last 2 byte of block number part
         self._raw_data["ref_block_bytes"] = ref_block_id[12:16]
         # last half part of block hash
@@ -713,12 +715,15 @@ class AsyncTron:
     async def get_latest_solid_block_id(self) -> str:
         """Get latest solid block id in hex."""
 
-        try:
-            info = await self.provider.make_request("wallet/getnodeinfo")
-            return info["solidityBlock"].split(",ID:", 1)[-1]
-        except Exception:
-            info = await self.get_latest_solid_block()
-            return info["blockID"]
+        info = await self.provider.make_request("wallet/getnodeinfo")
+        return info["solidityBlock"].split(",ID:", 1)[-1]
+
+    @alru_cache()
+    async def get_latest_solid_block_id_cached(self, ttl_hash=None) -> str:
+        """Get latest solid block id in hex."""
+
+        info = await self.provider.make_request("wallet/getnodeinfo")
+        return info["solidityBlock"].split(",ID:", 1)[-1]
 
     async def get_latest_solid_block_number(self) -> int:
         """Get latest solid block number. Implemented via `wallet/getnodeinfo`,
@@ -951,8 +956,16 @@ class AsyncTron:
         self._handle_api_error(payload)
         return payload
 
+    async def broadcastex(self, txn: AsyncTransaction) -> dict:
+        payload = await self.provider.make_request("wallet/broadcasttransactionex", txn.to_json())
+        self._handle_api_error(payload)
+        return payload
+
     async def get_sign_weight(self, txn: AsyncTransaction) -> dict:
         return await self.provider.make_request("wallet/getsignweight", txn.to_json())
+
+    async def get_storage_value(self, param: Any) -> list:
+        return await self.provider.make_request2("wallet/getstoragevalue", param)
 
     async def close(self):
         if not self.provider.client.is_closed:

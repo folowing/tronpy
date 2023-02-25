@@ -11,6 +11,7 @@ install_requires = [
     "httpx",
     "pycryptodome<4",
     "requests",
+    "async_lru",
 ]
 
 setup_kwargs = {

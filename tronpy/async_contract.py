@@ -44,7 +44,8 @@ class AsyncContractMethod(ContractMethod):
         return await self._async_trigger_contract(parameter)
 
     async def _async_trigger_contract(self, parameter):
-        if self._abi.get("stateMutability", None).lower() in ["view", "pure"]:
+        if self._abi.get("stateMutability", None).lower() in ["view", "pure"] \
+            or self.force_constant:
             # const call, contract ret
             ret = await self._client.trigger_const_smart_contract_function(
                 self._owner_address,
