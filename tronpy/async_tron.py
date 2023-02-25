@@ -960,7 +960,7 @@ class AsyncTron:
         self._handle_api_error(payload)
         return payload
 
-    async def broadcastex(self, txn: AsyncTransaction) -> dict:
+    async def broadcast_ex(self, txn: AsyncTransaction) -> dict:
         payload = await self.provider.make_request("wallet/broadcasttransactionex", txn.to_json())
         self._handle_api_error(payload)
         return payload
