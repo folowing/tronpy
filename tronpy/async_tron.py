@@ -195,6 +195,10 @@ class AsyncTransaction:
         """Broadcast the transaction to TRON network."""
         return AsyncTransactionRet(await self._client.broadcast(self), client=self._client, method=self._method)
 
+    async def broadcast_ex(self) -> AsyncTransactionRet:
+        """Broadcast the transaction to TRON network."""
+        return AsyncTransactionRet(await self._client.broadcast_ex(self), client=self._client, method=self._method)
+
     def set_signature(self, signature: list) -> "AsyncTransaction":
         """set async transaction signature"""
         self._signature = signature
