@@ -134,7 +134,10 @@ class AsyncTransaction:
     async def create(cls, *args, **kwargs) -> Optional["AsyncTransaction"]:
         _tx = cls(*args, **kwargs)
         if not _tx.txid or _tx._permission is EMPTY:
-            await _tx.check_sign_weight()
+            if _tx._raw_data.get('contract', [{}])[0].get('type') == 'TriggerSmartContract':
+                await _tx.get_transaction_id()
+            else:
+                await _tx.check_sign_weight()
         return _tx
 
     async def check_sign_weight(self):
@@ -145,6 +148,11 @@ class AsyncTransaction:
         self.txid = sign_weight["transaction"]["transaction"]["txID"]
         # when account not exist on-chain
         self._permission = sign_weight.get("permission", None)
+
+    async def get_transaction_id(self):
+        res = await self._client.get_transaction_id(self)
+        self.txid = res['txID']
+        self._permission = None
 
     def to_json(self) -> dict:
         return {
@@ -970,6 +978,9 @@ class AsyncTron:
 
     async def get_storage_value(self, param: Any) -> list:
         return await self.provider.make_request2("wallet/getstoragevalue", param)
+
+    async def get_transaction_id(self, txn: AsyncTransaction) -> dict:
+        return await self.provider.make_request("wallet/gettransactionid", txn.to_json())
 
     async def close(self):
         if not self.provider.client.is_closed:

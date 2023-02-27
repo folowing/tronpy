@@ -958,5 +958,5 @@ class Tron:
     def get_storage_value(self, param: Any) -> list:
         return self.provider.make_request2("wallet/getstoragevalue", param)
 
-    def get_transaction_id(self, txn: Transaction) -> Union[dict, str]:
+    def get_transaction_id(self, txn: Transaction) -> dict:
         return self.provider.make_request("wallet/gettransactionid", txn.to_json())
