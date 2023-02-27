@@ -126,14 +126,19 @@ class Transaction:
         self._permission: Optional[dict] = permission
 
         if (not self.txid or self._permission is EMPTY) and self._client:
-            sign_weight = self._client.get_sign_weight(self)
-            if "transaction" not in sign_weight:
-                self._client._handle_api_error(sign_weight)
-                return  # unreachable
-            self.txid = sign_weight["transaction"]["transaction"]["txID"]
+            if raw_data.get('contract', [{}])[0].get('type') == 'TriggerSmartContract':
+                res = self._client.get_transaction_id(self)
+                self.txid = res['txID']
+                self._permission = None
+            else:
+                sign_weight = self._client.get_sign_weight(self)
+                if "transaction" not in sign_weight:
+                    self._client._handle_api_error(sign_weight)
+                    return  # unreachable
+                self.txid = sign_weight["transaction"]["transaction"]["txID"]
 
-            # when account not exist on-chain
-            self._permission = sign_weight.get("permission", None)
+                # when account not exist on-chain
+                self._permission = sign_weight.get("permission", None)
 
     def to_json(self) -> dict:
         return {
@@ -952,3 +957,6 @@ class Tron:
 
     def get_storage_value(self, param: Any) -> list:
         return self.provider.make_request2("wallet/getstoragevalue", param)
+
+    def get_transaction_id(self, txn: Transaction) -> Union[dict, str]:
+        return self.provider.make_request("wallet/gettransactionid", txn.to_json())
