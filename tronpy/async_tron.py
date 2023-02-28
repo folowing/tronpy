@@ -28,7 +28,10 @@ from tronpy.exceptions import (
 )
 from tronpy.keys import PrivateKey
 from tronpy.providers.async_http import AsyncHTTPProvider
-from tronpy.util import get_ttl_hash
+from tronpy.util import (
+    get_ttl_hash,
+    get_transaction_id,
+)
 
 TAddress = str
 
@@ -135,7 +138,7 @@ class AsyncTransaction:
         _tx = cls(*args, **kwargs)
         if not _tx.txid or _tx._permission is EMPTY:
             if _tx._raw_data.get('contract', [{}])[0].get('type') == 'TriggerSmartContract':
-                await _tx.get_transaction_id()
+                _tx.get_transaction_id()
             else:
                 await _tx.check_sign_weight()
         return _tx
@@ -149,9 +152,8 @@ class AsyncTransaction:
         # when account not exist on-chain
         self._permission = sign_weight.get("permission", None)
 
-    async def get_transaction_id(self):
-        res = await self._client.get_transaction_id(self)
-        self.txid = res['txID']
+    def get_transaction_id(self):
+        self.txid = get_transaction_id(self)
         self._permission = None
 
     def to_json(self) -> dict:

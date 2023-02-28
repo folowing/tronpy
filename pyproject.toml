@@ -25,6 +25,7 @@ httpx = "*"
 pycryptodome = "<4"
 requests = "*"
 async_lru = "*"
+protobuf = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

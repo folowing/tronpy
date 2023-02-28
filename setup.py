@@ -12,6 +12,7 @@ install_requires = [
     "pycryptodome<4",
     "requests",
     "async_lru",
+    "protobuf",
 ]
 
 setup_kwargs = {

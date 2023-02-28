@@ -27,7 +27,11 @@ from tronpy.exceptions import (
 )
 from tronpy.keys import PrivateKey
 from tronpy.providers import HTTPProvider
-from tronpy.util import get_ttl_hash
+from tronpy.util import (
+    get_ttl_hash,
+    get_transaction_id,
+)
+
 
 TAddress = str
 
@@ -127,8 +131,7 @@ class Transaction:
 
         if (not self.txid or self._permission is EMPTY) and self._client:
             if raw_data.get('contract', [{}])[0].get('type') == 'TriggerSmartContract':
-                res = self._client.get_transaction_id(self)
-                self.txid = res['txID']
+                self.txid = get_transaction_id(self)
                 self._permission = None
             else:
                 sign_weight = self._client.get_sign_weight(self)
