@@ -295,7 +295,7 @@ class AsyncTransactionBuilder:
 
     async def build(self, options=None, **kwargs) -> AsyncTransaction:
         """Build the transaction."""
-        ref_block_id = await self._client.get_latest_solid_block_id_cached(ttl_hash=get_ttl_hash())
+        ref_block_id = await self._client.get_latest_solid_block_id_cached()
         # last 2 byte of block number part
         self._raw_data["ref_block_bytes"] = ref_block_id[12:16]
         # last half part of block hash
@@ -732,8 +732,8 @@ class AsyncTron:
         info = await self.provider.make_request("wallet/getnodeinfo")
         return info["solidityBlock"].split(",ID:", 1)[-1]
 
-    @alru_cache()
-    async def get_latest_solid_block_id_cached(self, ttl_hash=None) -> str:
+    @alru_cache(ttl=3600)
+    async def get_latest_solid_block_id_cached(self) -> str:
         """Get latest solid block id in hex."""
 
         info = await self.provider.make_request("wallet/getnodeinfo")
