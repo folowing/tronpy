@@ -201,13 +201,13 @@ class AsyncTransaction:
         self._signature.append(sig.hex())
         return self
 
-    async def broadcast(self) -> AsyncTransactionRet:
+    async def broadcast(self, source_tx_id: str = None) -> AsyncTransactionRet:
         """Broadcast the transaction to TRON network."""
-        return AsyncTransactionRet(await self._client.broadcast(self), client=self._client, method=self._method)
+        return AsyncTransactionRet(await self._client.broadcast(self, source_tx_id), client=self._client, method=self._method)
 
-    async def broadcast_ex(self) -> AsyncTransactionRet:
+    async def broadcast_ex(self, source_tx_id: str = None) -> AsyncTransactionRet:
         """Broadcast the transaction to TRON network."""
-        return AsyncTransactionRet(await self._client.broadcast_ex(self), client=self._client, method=self._method)
+        return AsyncTransactionRet(await self._client.broadcast_ex(self, source_tx_id), client=self._client, method=self._method)
 
     def set_signature(self, signature: list) -> "AsyncTransaction":
         """set async transaction signature"""
@@ -965,13 +965,19 @@ class AsyncTron:
 
     # Transaction handling
 
-    async def broadcast(self, txn: AsyncTransaction) -> dict:
-        payload = await self.provider.make_request("wallet/broadcasttransaction", txn.to_json())
+    async def broadcast(self, txn: AsyncTransaction, source_tx_id: str = None) -> dict:
+        params = txn.to_json()
+        if source_tx_id:
+            params['sourceTxID'] = source_tx_id
+        payload = await self.provider.make_request("wallet/broadcasttransaction", params)
         self._handle_api_error(payload)
         return payload
 
-    async def broadcast_ex(self, txn: AsyncTransaction) -> dict:
-        payload = await self.provider.make_request("wallet/broadcasttransactionex", txn.to_json())
+    async def broadcast_ex(self, txn: AsyncTransaction, source_tx_id: str = None) -> dict:
+        params = txn.to_json()
+        if source_tx_id:
+            params['sourceTxID'] = source_tx_id
+        payload = await self.provider.make_request("wallet/broadcasttransactionex", params)
         self._handle_api_error(payload)
         return payload
 

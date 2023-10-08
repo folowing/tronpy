@@ -188,13 +188,13 @@ class Transaction:
         self._signature.append(sig.hex())
         return self
 
-    def broadcast(self) -> TransactionRet:
+    def broadcast(self, source_tx_id: str = None) -> TransactionRet:
         """Broadcast the transaction to TRON network."""
         return TransactionRet(self._client.broadcast(self), client=self._client, method=self._method)
 
-    def broadcast_ex(self) -> TransactionRet:
+    def broadcast_ex(self, source_tx_id: str = None) -> TransactionRet:
         """Broadcast the transaction to TRON network."""
-        return TransactionRet(self._client.broadcast_ex(self), client=self._client, method=self._method)
+        return TransactionRet(self._client.broadcast_ex(self, source_tx_id), client=self._client, method=self._method)
 
     def set_signature(self, signature: list) -> "Transaction":
         """set transaction signature"""
@@ -941,15 +941,21 @@ class Tron:
 
     # Transaction handling
 
-    def broadcast(self, txn: Transaction) -> dict:
-        payload = self.provider.make_request("wallet/broadcasttransaction", txn.to_json())
+    def broadcast(self, txn: Transaction, source_tx_id: str = None) -> dict:
+        params = txn.to_json()
+        if source_tx_id:
+            params['sourceTxID'] = source_tx_id
+        payload = self.provider.make_request("wallet/broadcasttransaction", params)
         self._handle_api_error(payload)
         if payload.get("txid") is None:
             payload["txid"] = txn.txid
         return payload
 
-    def broadcast_ex(self, txn: Transaction) -> dict:
-        payload = self.provider.make_request("wallet/broadcasttransactionex", txn.to_json())
+    def broadcast_ex(self, txn: Transaction, source_tx_id: str = None) -> dict:
+        params = txn.to_json()
+        if source_tx_id:
+            params['sourceTxID'] = source_tx_id
+        payload = self.provider.make_request("wallet/broadcasttransactionex", params)
         self._handle_api_error(payload)
         if payload.get('txid') is None:
             payload['txid'] = txn.txid
