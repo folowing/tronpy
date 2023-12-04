@@ -1,5 +1,5 @@
 import os
-from typing import Any, Union
+from typing import Any, Union, Dict
 from urllib.parse import urljoin
 
 import httpx
@@ -22,6 +22,7 @@ class AsyncHTTPProvider:
         timeout: float = DEFAULT_TIMEOUT,
         client: httpx.AsyncClient = None,
         api_key: str = DEFAULT_API_KEY,
+        extra_headers: Dict[str, str] = None,
     ):
         super().__init__()
 
@@ -35,6 +36,8 @@ class AsyncHTTPProvider:
             raise TypeError(f"unknown endpoint uri {endpoint_uri}")
 
         headers = {"User-Agent": "Tronpy/0.2", "Tron-Pro-Api-Key": api_key}
+        if extra_headers:
+            headers.update(extra_headers)
         if client is None:
             self.client = httpx.AsyncClient(headers=headers, timeout=Timeout(timeout))
         else:
