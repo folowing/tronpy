@@ -23,6 +23,7 @@ class AsyncHTTPProvider:
         client: httpx.AsyncClient = None,
         api_key: str = DEFAULT_API_KEY,
         extra_headers: Dict[str, str] = None,
+        keepalive_expiry: float = None,
     ):
         super().__init__()
 
@@ -38,8 +39,10 @@ class AsyncHTTPProvider:
         headers = {"User-Agent": "Tronpy/0.2", "Tron-Pro-Api-Key": api_key}
         if extra_headers:
             headers.update(extra_headers)
+        limits = httpx.Limits(keepalive_expiry=keepalive_expiry)
         if client is None:
-            self.client = httpx.AsyncClient(headers=headers, timeout=Timeout(timeout))
+            self.client = httpx.AsyncClient(headers=headers, timeout=Timeout(timeout),
+                                            limits=limits)
         else:
             self.client = client
 
