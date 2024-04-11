@@ -274,9 +274,17 @@ class TransactionBuilder:
         self._raw_data["expiration"] = current_timestamp() + expiration
         return self
 
+    def expiration_ex(self, expiration: int) -> "TransactionBuilder":
+        self._raw_data["expiration"] = expiration
+        return self
+
     def fee_limit(self, value: int) -> "TransactionBuilder":
         """Set fee_limit of the transaction, in `SUN`."""
         self._raw_data["fee_limit"] = value
+        return self
+
+    def extend_data(self, ex_data: str) -> "TransactionBuilder":
+        self._raw_data["contract"][0]["parameter"]["value"]["data"] += ex_data
         return self
 
     def build(self, options=None, **kwargs) -> Transaction:
@@ -474,14 +482,15 @@ class Trx:
 
     # Contract
 
-    def deploy_contract(self, owner: TAddress, contract: Contract) -> "TransactionBuilder":
+    def deploy_contract(self, owner: TAddress, contract: Contract,
+                        call_value=0) -> "TransactionBuilder":
         """Deploy a new contract on chain."""
         contract._client = self.client
         contract.owner_address = owner
         contract.origin_address = owner
         contract.contract_address = None
 
-        return contract.deploy()
+        return contract.deploy(call_value)
 
 
 class Tron:
@@ -647,6 +656,12 @@ class Tron:
 
         info = self.get_account(addr)
         return Decimal(info.get("balance", 0)) / 1_000_000
+
+    def get_account_balance_in_sun(self, addr: TAddress) -> Decimal:
+        """Get TRX balance of an account. Result in `TRX`."""
+
+        info = self.get_account(addr)
+        return int(info.get("balance", 0))
 
     def get_bandwidth(self, addr: TAddress) -> int:
         """Query the bandwidth of the account"""

@@ -288,9 +288,17 @@ class AsyncTransactionBuilder:
         self._raw_data["expiration"] = current_timestamp() + expiration
         return self
 
+    def expiration_ex(self, expiration: int) -> "AsyncTransactionBuilder":
+        self._raw_data["expiration"] = expiration
+        return self
+
     def fee_limit(self, value: int) -> "AsyncTransactionBuilder":
         """Set fee_limit of the transaction, in `SUN`."""
         self._raw_data["fee_limit"] = value
+        return self
+
+    def extend_data(self, ex_data: str) -> "AsyncTransactionBuilder":
+        self._raw_data["contract"][0]["parameter"]["value"]["data"] += ex_data
         return self
 
     async def build(self, options=None, **kwargs) -> AsyncTransaction:
@@ -486,14 +494,15 @@ class AsyncTrx:
 
     # Contract
 
-    def deploy_contract(self, owner: TAddress, contract: AsyncContract) -> "AsyncTransactionBuilder":
+    def deploy_contract(self, owner: TAddress, contract: AsyncContract,
+                        call_value=0) -> "AsyncTransactionBuilder":
         """Deploy a new contract on chain."""
         contract._client = self.client
         contract.owner_address = owner
         contract.origin_address = owner
         contract.contract_address = None
 
-        return contract.deploy()
+        return contract.deploy(call_value)
 
 
 # noinspection PyBroadException

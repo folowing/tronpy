@@ -58,7 +58,7 @@ class HTTPProvider:
             self.use_api_key = False
 
         self.sess = requests.session()
-        self.sess.headers["User-Agent"] = "Tronpy/0.2"
+        # self.sess.headers["User-Agent"] = "Tronpy/0.2"
 
         self.timeout = timeout
         """Request timeout in second."""

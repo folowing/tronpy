@@ -84,7 +84,7 @@ class Contract:
     def bytecode(self, value):
         self._bytecode = assure_bytes(value)
 
-    def deploy(self) -> Any:
+    def deploy(self, call_value=0) -> Any:
         if self.contract_address:
             raise RuntimeError(f"this contract has already deployed to {self.contract_address}")
 
@@ -99,7 +99,7 @@ class Contract:
                     "origin_address": to_hex_address(self.origin_address),
                     "abi": {"entrys": self.abi},
                     "bytecode": self.bytecode,
-                    "call_value": 0,  # TODO
+                    "call_value": call_value,  # TODO
                     "name": self.name,
                     "consume_user_resource_percent": self.user_resource_percent,
                     "origin_energy_limit": self.origin_energy_limit,
@@ -185,6 +185,23 @@ class Contract:
                 return fn
 
         return None
+
+    def build_transaction(
+        self, data='', call_value=0,
+        call_token_value=0, call_token_id=0,
+        owner_address='410000000000000000000000000000000000000000',
+    ):
+        return self._client.trx._build_transaction(
+            "TriggerSmartContract",
+            {
+                "owner_address": to_hex_address(owner_address),
+                "contract_address": to_hex_address(self.contract_address),
+                "data": data,
+                "call_value": call_value,
+                "call_token_value": call_token_value,
+                "token_id": call_token_id,
+            },
+        )
 
 
 class ContractEvents:
