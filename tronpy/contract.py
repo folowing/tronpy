@@ -452,6 +452,7 @@ class ContractMethod:
                 self._contract.contract_address,
                 self.function_signature,
                 parameter,
+                self.call_value,
             )
 
             return self.parse_output(ret)

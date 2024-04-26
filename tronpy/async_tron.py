@@ -948,6 +948,7 @@ class AsyncTron:
         contract_address: TAddress,
         function_selector: str,
         parameter: str,
+        call_value: int,
     ) -> str:
         ret = await self.provider.make_request(
             "wallet/triggerconstantcontract",
@@ -957,6 +958,7 @@ class AsyncTron:
                 "function_selector": function_selector,
                 "parameter": parameter,
                 "visible": True,
+                "call_value": call_value,
             },
         )
         self._handle_api_error(ret)
