@@ -53,6 +53,7 @@ class AsyncContractMethod(ContractMethod):
                 self.function_signature,
                 parameter,
                 self.call_value,
+                self.timestamp,
             )
 
             return self.parse_output(ret)

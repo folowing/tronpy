@@ -931,17 +931,20 @@ class Tron:
         function_selector: str,
         parameter: str,
         call_value: int,
+        timestamp: int,
     ) -> str:
+        payload = {
+            "owner_address": keys.to_base58check_address(owner_address),
+            "contract_address": keys.to_base58check_address(contract_address),
+            "function_selector": function_selector,
+            "parameter": parameter,
+            "visible": True,
+            "call_value": call_value,
+        }
+        if timestamp:
+            payload['timestamp'] = timestamp
         ret = self.provider.make_request(
             "wallet/triggerconstantcontract",
-            {
-                "owner_address": keys.to_base58check_address(owner_address),
-                "contract_address": keys.to_base58check_address(contract_address),
-                "function_selector": function_selector,
-                "parameter": parameter,
-                "visible": True,
-                "call_value": call_value,
-            },
         )
         self._handle_api_error(ret)
         if "message" in ret.get("result", {}):

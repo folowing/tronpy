@@ -362,6 +362,7 @@ class ContractMethod:
         self.call_token_id = 0
 
         self.force_constant = False
+        self.timestamp = 0
 
     def __str__(self):
         return self.function_type
@@ -387,6 +388,10 @@ class ContractMethod:
 
     def with_constant(self) -> "ContractMethod":
         self.force_constant = True
+        return self
+
+    def with_timestamp(self, timestamp: int) -> "ContractMethod":
+        self.timestamp = timestamp
         return self
 
     def get_data(self, *args, **kwargs) -> bytearray:
@@ -453,6 +458,7 @@ class ContractMethod:
                 self.function_signature,
                 parameter,
                 self.call_value,
+                self.timestamp,
             )
 
             return self.parse_output(ret)
