@@ -945,6 +945,7 @@ class Tron:
             payload['timestamp'] = timestamp
         ret = self.provider.make_request(
             "wallet/triggerconstantcontract",
+            payload,
         )
         self._handle_api_error(ret)
         if "message" in ret.get("result", {}):
