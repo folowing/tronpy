@@ -3,7 +3,7 @@ import json
 import time
 from decimal import Decimal
 from pprint import pprint
-from typing import Optional, Tuple, Union, Any
+from typing import Optional, Tuple, Union, Any, List
 from async_lru import alru_cache
 
 from tronpy import keys
@@ -250,12 +250,27 @@ class AsyncTransaction:
 class AsyncTransactionBuilder:
     """TransactionBuilder, to build a :class:`~Transaction` object."""
 
-    def __init__(self, inner: dict, client: "AsyncTron", method: AsyncContractMethod = None):
+    def __init__(self, inner: dict, client: "AsyncTron", method: AsyncContractMethod = None,
+                 options: dict = None):
         self._client = client
+        if not options:
+            options = {}
+
+        now = current_timestamp()
+        if 'timestamp' in options:
+            timestamp = options['timestamp']
+        else:
+            timestamp = now
+
+        if 'expiration' in options:
+            expiration = options['expiration']
+        else:
+            expiration = now + 60_000;
+
         self._raw_data = {
             "contract": [inner],
-            "timestamp": current_timestamp(),
-            "expiration": current_timestamp() + 60_000,
+            "timestamp": timestamp,
+            "expiration": expiration,
             "ref_block_bytes": None,
             "ref_block_hash": None,
         }
@@ -290,6 +305,10 @@ class AsyncTransactionBuilder:
 
     def expiration_ex(self, expiration: int) -> "AsyncTransactionBuilder":
         self._raw_data["expiration"] = expiration
+        return self
+
+    def timestamp(self, ts: int) -> "AsyncTransactionBuilder":
+        self._raw_data["timestamp"] = ts
         return self
 
     def fee_limit(self, value: int) -> "AsyncTransactionBuilder":
@@ -995,6 +1014,24 @@ class AsyncTron:
         payload = await self.provider.make_request("wallet/broadcasttransactionex", params)
         self._handle_api_error(payload)
         return payload
+
+    async def broadcast_bundle(self, txns: List[AsyncTransaction | str]) -> List[AsyncTransactionRet]:
+        txn_param_list = []
+        res = []
+        for txn in txns:
+            if isinstance(txn, AsyncTransaction):
+                txn_param_list.append(txn.to_json())
+                tx_ret = AsyncTransactionRet({'txid': txn.txid}, self, txn._method)
+                res.append(tx_ret)
+            else:
+                txn_param_list.append({'txID': txn})
+
+        payload = await self.provider.make_request(
+            "wallet/broadcasttransactionbundle",
+            {'transactions': txn_param_list}
+        )
+        self._handle_api_error(payload)
+        return res
 
     async def get_sign_weight(self, txn: AsyncTransaction) -> dict:
         return await self.provider.make_request("wallet/getsignweight", txn.to_json())
