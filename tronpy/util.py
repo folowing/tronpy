@@ -15,17 +15,20 @@ def get_ttl_hash(seconds=3600):
 
 def get_transaction_id(txn):
     tx_obj = txn._raw_data
-    contract_obj = tx_obj['contract'][0]['parameter']['value']
+    contract_obj = tx_obj['contract'][0]
+    param_value = contract_obj['parameter']['value']
     smart_contract = TriggerSmartContract()
-    smart_contract.owner_address = bytes.fromhex(contract_obj['owner_address'])
-    smart_contract.contract_address = bytes.fromhex(contract_obj['contract_address'])
-    smart_contract.call_value = contract_obj['call_value']
-    smart_contract.data = bytes.fromhex(contract_obj['data'])
-    smart_contract.call_token_value = contract_obj['call_token_value']
-    smart_contract.token_id = contract_obj['token_id']
+    smart_contract.owner_address = bytes.fromhex(param_value['owner_address'])
+    smart_contract.contract_address = bytes.fromhex(param_value['contract_address'])
+    smart_contract.call_value = param_value['call_value']
+    smart_contract.data = bytes.fromhex(param_value['data'])
+    smart_contract.call_token_value = param_value['call_token_value']
+    smart_contract.token_id = param_value['token_id']
 
     contract = Contract()
     contract.type = Contract.ContractType.TriggerSmartContract
+    if 'Permission_id' in contract_obj:
+        contract.Permission_id = contract_obj['Permission_id']
     contract.parameter.Pack(smart_contract)
 
     raw_data = TransactionRawData()

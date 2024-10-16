@@ -322,7 +322,10 @@ class AsyncTransactionBuilder:
 
     async def build(self, options=None, **kwargs) -> AsyncTransaction:
         """Build the transaction."""
-        ref_block_id = await self._client.get_latest_solid_block_id_cached()
+        if options and 'ref_block_id' in options:
+            ref_block_id = options['ref_block_id']
+        else:
+            ref_block_id = await self._client.get_latest_solid_block_id_cached()
         # last 2 byte of block number part
         self._raw_data["ref_block_bytes"] = ref_block_id[12:16]
         # last half part of block hash
