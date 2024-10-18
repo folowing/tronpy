@@ -770,6 +770,14 @@ class AsyncTron:
         info = await self.provider.make_request("wallet/getnodeinfo")
         return info["solidityBlock"].split(",ID:", 1)[-1]
 
+    async def start_refresh_solid_block_id_cache_daemon(self, delay=1800, duration=1800):
+        if delay:
+            await asyncio.sleep(delay)
+        while True:
+            self.get_latest_solid_block_id_cached.cache_clear()
+            await self.get_latest_solid_block_id_cached()
+            await asyncio.sleep(duration)
+
     async def get_latest_solid_block_number(self) -> int:
         """Get latest solid block number. Implemented via `wallet/getnodeinfo`,
         which is faster than `walletsolidity/getnowblock`."""
