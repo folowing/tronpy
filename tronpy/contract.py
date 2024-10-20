@@ -363,6 +363,7 @@ class ContractMethod:
 
         self.force_constant = False
         self.timestamp = 0
+        self.block_no = 0
 
     def __str__(self):
         return self.function_type
@@ -392,6 +393,10 @@ class ContractMethod:
 
     def with_timestamp(self, timestamp: int) -> "ContractMethod":
         self.timestamp = timestamp
+        return self
+
+    def with_block_no(self, block_no: int) -> "ContractMethod":
+        self.block_no = block_no
         return self
 
     def get_data(self, *args, **kwargs) -> bytearray:
@@ -459,6 +464,7 @@ class ContractMethod:
                 parameter,
                 self.call_value,
                 self.timestamp,
+                self.block_no,
             )
 
             return self.parse_output(ret)

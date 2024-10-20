@@ -980,6 +980,7 @@ class AsyncTron:
         parameter: str,
         call_value: int,
         timestamp: int,
+        block_no: int,
     ) -> str:
         payload = {
             "owner_address": keys.to_base58check_address(owner_address),
@@ -991,6 +992,8 @@ class AsyncTron:
         }
         if timestamp:
             payload['timestamp'] = timestamp
+        if block_no:
+            payload['block_no'] = block_no
         ret = await self.provider.make_request(
             "wallet/triggerconstantcontract",
             payload,
