@@ -933,6 +933,7 @@ class Tron:
         call_value: int,
         timestamp: int,
         block_no: int,
+        data: str = None,
     ) -> str:
         payload = {
             "owner_address": keys.to_base58check_address(owner_address),
@@ -942,6 +943,8 @@ class Tron:
             "visible": True,
             "call_value": call_value,
         }
+        if data:
+            payload["data"] = data
         if timestamp:
             payload['timestamp'] = timestamp
         if block_no:
