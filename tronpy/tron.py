@@ -3,7 +3,7 @@ import time
 from decimal import Decimal
 from functools import lru_cache
 from pprint import pprint
-from typing import Optional, Tuple, Union, Any
+from typing import Optional, Tuple, Union, Any, List
 
 from tronpy import keys
 from tronpy.abi import tron_abi
@@ -236,12 +236,27 @@ class Transaction:
 class TransactionBuilder:
     """TransactionBuilder, to build a :class:`~Transaction` object."""
 
-    def __init__(self, inner: dict, client: "Tron", method: ContractMethod = None):
+    def __init__(self, inner: dict, client: "Tron", method: ContractMethod = None,
+                 options: dict = None):
         self._client = client
+        if not options:
+            options = {}
+
+        now = current_timestamp()
+        if 'timestamp' in options:
+            timestamp = options['timestamp']
+        else:
+            timestamp = now
+
+        if 'expiration' in options:
+            expiration = options['expiration']
+        else:
+            expiration = now + 60_000
+
         self._raw_data = {
             "contract": [inner],
-            "timestamp": current_timestamp(),
-            "expiration": current_timestamp() + 60_000,
+            "timestamp": timestamp,
+            "expiration": expiration,
             "ref_block_bytes": None,
             "ref_block_hash": None,
         }
@@ -276,6 +291,10 @@ class TransactionBuilder:
 
     def expiration_ex(self, expiration: int) -> "TransactionBuilder":
         self._raw_data["expiration"] = expiration
+        return self
+
+    def timestamp(self, ts: int) -> "TransactionBuilder":
+        self._raw_data["timestamp"] = ts
         return self
 
     def fee_limit(self, value: int) -> "TransactionBuilder":
@@ -987,6 +1006,25 @@ class Tron:
         if payload.get('txid') is None:
             payload['txid'] = txn.txid
         return payload
+
+    def broadcast_bundle(self, txns: List[Transaction | str]) -> List[TransactionRet]:
+        txn_param_list = []
+        res = []
+        for txn in txns:
+            if isinstance(txn, Transaction):
+                txn_param_list.append(txn.to_json())
+                tx_ret = TransactionRet({'txid': txn.txid}, self, txn._method)
+                res.append(tx_ret)
+            else:
+                txn_param_list.append({'txID': txn})
+
+        payload = self.provider.make_request(
+            "wallet/broadcasttransactionbundle",
+            {'transactions': txn_param_list}
+        )
+        self._handle_api_error(payload)
+        return res
+
 
     def get_sign_weight(self, txn: Transaction) -> dict:
         return self.provider.make_request("wallet/getsignweight", txn.to_json())

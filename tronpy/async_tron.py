@@ -265,7 +265,7 @@ class AsyncTransactionBuilder:
         if 'expiration' in options:
             expiration = options['expiration']
         else:
-            expiration = now + 60_000;
+            expiration = now + 60_000
 
         self._raw_data = {
             "contract": [inner],
