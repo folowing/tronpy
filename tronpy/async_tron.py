@@ -1035,7 +1035,7 @@ class AsyncTron:
         self._handle_api_error(payload)
         return payload
 
-    async def broadcast_bundle(self, txns: List[AsyncTransaction | str]) -> List[AsyncTransactionRet]:
+    async def broadcast_bundle(self, txns: List[AsyncTransaction | str, ], ignore: bool = False) -> List[AsyncTransactionRet]:
         txn_param_list = []
         res = []
         for txn in txns:
@@ -1048,7 +1048,7 @@ class AsyncTron:
 
         payload = await self.provider.make_request(
             "wallet/broadcasttransactionbundle",
-            {'transactions': txn_param_list}
+            {'transactions': txn_param_list, 'ignore': ignore}
         )
         self._handle_api_error(payload)
         return res
