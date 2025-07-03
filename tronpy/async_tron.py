@@ -813,7 +813,7 @@ class AsyncTron:
         """
 
         if detail is False:
-            block = await self.provider.make_request("wallet/getblock", {"id_or_num": id_or_num, "visible": visible, "detail": False})
+            block = await self.provider.make_request("wallet/getblock", {"id_or_num": str(id_or_num), "visible": visible, "detail": False})
         elif isinstance(id_or_num, (int,)):
             block = await self.provider.make_request("wallet/getblockbynum", {"num": id_or_num, "visible": visible})
         elif isinstance(id_or_num, (str,)):
