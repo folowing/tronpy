@@ -782,7 +782,8 @@ class Tron:
         info = self.provider.make_request("wallet/getnodeinfo")
         return int(info["block"].split(",ID:", 1)[0].replace("Num:", "", 1))
 
-    def get_block(self, id_or_num: Union[None, str, int] = None, *, visible: bool = True) -> dict:
+    def get_block(self, id_or_num: Union[None, str, int] = None, *, visible: bool = True,
+                  detail: bool = True) -> dict:
         """Get block from a block id or block number.
 
         :param id_or_num: Block number, or Block hash(id), or ``None`` (default) to get the latest block.
@@ -793,6 +794,8 @@ class Tron:
             block = self.provider.make_request("wallet/getblockbynum", {"num": id_or_num, "visible": visible})
         elif isinstance(id_or_num, (str,)):
             block = self.provider.make_request("wallet/getblockbyid", {"value": id_or_num, "visible": visible})
+        elif detail is False:
+            block = self.provider.make_request("wallet/getblock", {"id_or_num": id_or_num, "visible": visible, "detail": False})
         elif id_or_num is None:
             block = self.provider.make_request("wallet/getnowblock", {"visible": visible})
         else:
