@@ -803,17 +803,21 @@ class AsyncTron:
         info = await self.provider.make_request("wallet/getnodeinfo")
         return int(info["block"].split(",ID:", 1)[0].replace("Num:", "", 1))
 
-    async def get_block(self, id_or_num: Union[None, str, int] = None, *, visible: bool = True) -> dict:
+    async def get_block(self, id_or_num: Union[None, str, int] = None, *, visible: bool = True,
+                        detail: bool = True) -> dict:
         """Get block from a block id or block number.
 
         :param id_or_num: Block number, or Block hash(id), or ``None`` (default) to get the latest block.
         :param visible: Use ``visible=False`` to get non-base58check addresses and strings instead of hex strings.
+        :param detail: Use ``detail=True`` to get detail info about a block.
         """
 
         if isinstance(id_or_num, (int,)):
             block = await self.provider.make_request("wallet/getblockbynum", {"num": id_or_num, "visible": visible})
         elif isinstance(id_or_num, (str,)):
             block = await self.provider.make_request("wallet/getblockbyid", {"value": id_or_num, "visible": visible})
+        elif detail is False:
+            block = await self.provider.make_request("wallet/getblock", {"id_or_num": id_or_num, "visible": visible, "detail": False})
         elif id_or_num is None:
             block = await self.provider.make_request("wallet/getnowblock", {"visible": visible})
         else:
