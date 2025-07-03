@@ -812,12 +812,12 @@ class AsyncTron:
         :param detail: Use ``detail=True`` to get detail info about a block.
         """
 
-        if isinstance(id_or_num, (int,)):
+        if detail is False:
+            block = await self.provider.make_request("wallet/getblock", {"id_or_num": id_or_num, "visible": visible, "detail": False})
+        elif isinstance(id_or_num, (int,)):
             block = await self.provider.make_request("wallet/getblockbynum", {"num": id_or_num, "visible": visible})
         elif isinstance(id_or_num, (str,)):
             block = await self.provider.make_request("wallet/getblockbyid", {"value": id_or_num, "visible": visible})
-        elif detail is False:
-            block = await self.provider.make_request("wallet/getblock", {"id_or_num": id_or_num, "visible": visible, "detail": False})
         elif id_or_num is None:
             block = await self.provider.make_request("wallet/getnowblock", {"visible": visible})
         else:
