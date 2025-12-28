@@ -40,4 +40,4 @@ def get_transaction_id(txn):
     raw_data.contract.extend([contract])
 
     raw_data_bytes = raw_data.SerializeToString()
-    return sha256(raw_data_bytes).hex()
+    return sha256(raw_data_bytes).hex(), raw_data_bytes.hex()

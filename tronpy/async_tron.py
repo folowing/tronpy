@@ -132,6 +132,7 @@ class AsyncTransaction:
         self._permission: Optional[dict] = raw_data.get("permission", permission)
 
         # IMPORTANT must use "Transaction.create" to create a new Transaction
+        self._raw_data_bytes = ""
 
     @classmethod
     async def create(cls, *args, **kwargs) -> Optional["AsyncTransaction"]:
@@ -153,7 +154,9 @@ class AsyncTransaction:
         self._permission = sign_weight.get("permission", None)
 
     def get_transaction_id(self):
-        self.txid = get_transaction_id(self)
+        txid, raw_data_bytes = get_transaction_id(self)
+        self.txid = txid
+        self._raw_data_bytes = raw_data_bytes
         self._permission = None
 
     def to_json(self) -> dict:
